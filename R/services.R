@@ -1,8 +1,6 @@
-#' @title Access Helsinki region Service Map API
+#' @title Turku Air Quality Monitoring
 #'
-#' @description Access the new Helsinki region Service Map (Paakaupunkiseudun Palvelukartta)
-#' http://dev.hel.fi/servicemap/ data through the API: http://api.hel.fi/servicemap/v2/.
-#' For more API documentation and license information see the API link.
+#' @description Access data from Turku Region Air Quality Monitoring Stations
 #'
 #' @param station.id NULL (default) returns information from all stations, inputing
 #' one or more ID's returns information for given stations. Valid stations are:
@@ -132,4 +130,56 @@ get_turku_energia_art <- function(data.url = "https://dev.turku.fi/datasets/turk
   data <- read.csv2(data_url, header = TRUE, dec = ".", fileEncoding = "latin1")
   sf_objekti <- st_as_sf(x = data, coords = c(3, 4), crs = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
   sf_objekti
+}
+
+#' @title List Turku regoion addresses
+#'
+#' @description Download and list addresses in Turku region
+#'
+#' @details Dataset contains addresses for Turku, Kaarina, Aura, Lieto,
+#' Marttila, Paimio, Sauvo, Rusko, Raisio, Masku, Nousiainen, Mynämäki and Naantali.
+#'
+#' Coordinates are given in EPSG:3877 (ETRS-GK23) format
+#'
+#' @source See \href{https://www.avoindata.fi/data/fi/dataset/turun-seudun-osoitteet}{avoindata.fi}
+#' for additional information.
+#'
+#' @param city Choose a city. Default is NULL, returning whole dataset
+#' @param to.sf Turn list into an sf object. Default is FALSE
+#'
+#' @return list or sf object
+#'
+#' @author Pyry Kantanen
+#'
+#' @examples
+#' addresses <- get_turku_addresses()
+#'
+#' @importFrom utils read.csv2
+#' @importFrom sf st_as_sf st_sf st_crs
+#'
+#' @export
+get_turku_addresses <- function(city = NULL, to.sf = FALSE) {
+  url <- "https://api.turku.fi/addresses.csv"
+  data_object <- read.csv2(file = url, header = FALSE, fileEncoding = "latin1")
+  names(data_object) <- c("city", "street", "number", "lon", "lat")
+
+  # Some municipalities have made errors in data input, here is a temp fix
+  rows_to_correct <- which(is.na(data_object$lat))
+  latitudes <- data_object$lon[rows_to_correct]
+  longitudes <- data_object$number[rows_to_correct]
+  data_object$lat[rows_to_correct] <- latitudes
+  data_object$lon[rows_to_correct] <- longitudes
+  data_object$number[rows_to_correct] <- NA_integer_
+
+  if (!is.null(city)) {
+    data_object <- data_object[which(data_object$city %in% city),]
+  }
+
+  if (to.sf == TRUE) {
+    sf_object <- st_as_sf(x = data_object, coords = c("lon", "lat"))
+    st_crs(sf_object) <- "EPSG:3877"
+    return(sf_object)
+  } else {
+    return(data_object)
+  }
 }
