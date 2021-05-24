@@ -2,7 +2,7 @@
 % Please edit documentation in R/services.R
 \name{get_airmonitoring}
 \alias{get_airmonitoring}
-\title{Access Helsinki region Service Map API}
+\title{Turku Air Quality Monitoring}
 \source{
 API Location: https://api.turku.fi/airmonitoring/v1/
 
@@ -26,9 +26,7 @@ TRUE returns historical data}
 a data.frame or an sf object
 }
 \description{
-Access the new Helsinki region Service Map (Paakaupunkiseudun Palvelukartta)
-http://dev.hel.fi/servicemap/ data through the API: http://api.hel.fi/servicemap/v2/.
-For more API documentation and license information see the API link.
+Access data from Turku Region Air Quality Monitoring Stations
 }
 \examples{
 kauppatori <- get_airmonitoring(station.id="kauppatori")

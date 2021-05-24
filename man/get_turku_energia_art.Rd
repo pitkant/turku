@@ -9,21 +9,23 @@ for additional information.
 }
 \usage{
 get_turku_energia_art(
-  data.url = "https://dev.turku.fi/datasets/turku-energia-ymparistotaideteokset.csv"
+  data.url = "https://dev.turku.fi/datasets/turku-energia-ymparistotaideteokset.csv",
+  to.sf = FALSE
 )
 }
 \arguments{
 \item{data.url}{Dataset url}
+
+\item{to.sf}{Turn list into an sf object. Default is FALSE}
 }
 \value{
-sf object
+data.frame or sf object
 }
 \description{
 Easy access to Turku Region Linked Events API
 }
 \examples{
 art_sf <- get_turku_energia_art()
-
 }
 \author{
 Pyry Kantanen
