@@ -193,7 +193,7 @@ get_turku_addresses <- function(city = NULL, to.sf = FALSE, fix.data = TRUE) {
 #'   spots (Lanaus)} \item{"hs"} {Planing (höyläys)} \item{"pe"} {Street washing
 #'   (kadunpesu)} \item{"ps"} {Dust binding (Pölynsidonta)} \item{"hn"} {Sand
 #'   removal (hiekannosto)} \item{"hj"} {Brushing (harjaus)} \item{"pn"}
-#'   {Coating (pinnoitus, liittyy kesähoitoreitteihin} }
+#'   {Coating (pinnoitus, liittyy kesähoitoreitteihin)} }
 #' @source See
 #'   \href{https://www.avoindata.fi/data/fi/dataset/turun-kaupungin-katujen-kunnossapitorajapinta}{avoindata.fi}
 #'    for additional information. See
@@ -223,4 +223,128 @@ get_maintenance_locations <- function(id = NULL, ...) {
 
   object <- jsonlite::fromJSON(txt = api_url, simplifyVector = TRUE)
   object
+}
+
+#' @title Access Turku Region Linked Events API
+#'
+#' @description Easy access to Turku Region Linked Events API
+#'
+#' @source Turku Region Linked Events API v1. The API is developed by the
+#' \href{http://dev.hel.fi}{City of Helsinki Open Software Development team}.
+#'
+#' For API specification, see \url{https://github.com/City-of-Helsinki/api-linked-events}
+#'
+#' @param query The API query as a string, for example "event", "category",
+#' "language", "place" or "keyword".
+#' @param ... Additional parameters that narrow down the output (optional).
+#'
+#' @details
+#' Complete list of possible query input: "keyword", "keyword_set", "place",
+#' "language", "organization", "image", "event", "search", "user".
+#'
+#' With "..." the user can pass on additional parameters that depend on the
+#' chosen query input. For example, when performing a search (query = "search"),
+#' the search can be narrowed down with parameters such as:
+#' \itemize{
+#'  \item{q="konsertti"} {complete search, returns events that have the word "konsertti"}
+#'  \item{input="konse"} {partial search, returns events with words that contain "konse"}
+#'  \item{type="event"} {returns only "events"}
+#'  \item{start="2017-01-01"} {events starting on 2017-01-01 or after}
+#'  \item{end="2017-01-10"} {events ending on 2017-01-10 or before}
+#' }
+#'
+#' For more detailed explanation, see \url{http://api.turku.fi/linkedevents/v1/}.
+#'
+#' @return Data frame or a list
+#'
+#' @importFrom httr parse_url build_url
+#' @importFrom jsonlite fromJSON
+#'
+#' @author Juuso Parkkinen \email{louhos@@googlegroups.com}, Pyry Kantanen
+#'
+#' @examples
+#' events <- get_linkedevents(query="search", q="teatteri", start="2020-01-01")
+#'
+#' @export
+
+get_linkedevents <- function(query, ...) {
+
+  # Build query url
+  api_url <- "https://api.turku.fi/linkedevents/v1/"
+  query_url <- paste0(api_url, query, "/")
+
+  url <- httr::parse_url(query_url)
+  url$query <- list(...)
+  url <- httr::build_url(url)
+
+  # Check whether API url available
+  conn<-url(api_url)
+  doesnotexist<-inherits(try(suppressWarnings(readLines(conn)),silent=TRUE),"try-error")
+  close(conn)
+  if (doesnotexist) {
+    warning(paste("Sorry! API", api_url, "not available! Returning NULL"))
+    return(NULL)
+  }
+
+  res_list <- jsonlite::fromJSON(url)
+  # res_list <- res_list$data
+
+  message(
+    "Unless otherwise stated, the data is licensed using CC BY 4.0 license.
+  Images are licensed as event_only in the API. The image license is as follows:
+  The City of Turku reserves all rights to the images. Images can only be used
+  for information and communications connected to the event depicted in the
+  images. The images can be used free of charge for this purpose. To use or
+  move the images for other purposes is forbidden. The source must absolutely
+  be mentioned when using an image.")
+
+  return(res_list)
+}
+
+#' @title Turku bicycle routes
+#' @description Download and visualize bicycle routes in Turku
+#' @source See
+#'   \href{https://www.avoindata.fi/data/fi/dataset/turun-kaupungin-katujen-kunnossapitorajapinta}{avoindata.fi}
+#'    for additional information. See
+#'   \href{https://github.com/City-of-Helsinki/aura/wiki/API}{City of Helsinki documentation}
+#'   for more information on the API.
+#' @param choice Input "paa", "lahi" or NULL (default)
+#' @return data.frame
+#' @author Pyry Kantanen
+#' @examples
+#' bicycle <- get_bicycle_routes(dataset = "paa")
+#' @importFrom rgdal readOGR
+#' @importFrom utils download.file unzip menu
+#' @export
+get_bicycle_routes <- function(dataset = NULL, ...) {
+  url <- "https://dev.turku.fi/datasets/turun-kaupungin-pyorailyverkosto.zip"
+
+  temp <- tempfile(fileext = ".zip")
+  download.file(url, temp)
+  unzip(temp, exdir = tempdir())
+  tab_files <- list.files(path = tempdir(), pattern = "\\.TAB$")
+
+  if (is.null(dataset)) {
+    choice_index <-  menu(tab_files, graphics = FALSE, title = "Choose dataset")
+    final_choice <- tab_files[choice_index]
+  } else if (dataset == "lahi" | dataset == "paa") {
+    choice_index <- grep(pattern = paste0("^", dataset, ".*"), x = tab_files, ignore.case = TRUE)
+    final_choice <- tab_files[choice_index]
+  }
+
+  bike_data <- data.frame()
+  bike_data <- rgdal::readOGR(dsn = paste(tempdir(), final_choice, sep = "/"))
+  bike_data
+
+
+  # if (!is.null(id)) {
+  #   paste(api_url, id, sep = "/")
+  # }
+  #
+  # url <- parse_url(api_url)
+  # url$query <- list(...)
+  # url <- build_url(url)
+  #
+  # object <- jsonlite::fromJSON(txt = api_url, simplifyVector = TRUE)
+  # object
 }

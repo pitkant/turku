@@ -35,7 +35,7 @@ Possible events for vehicles: \itemize{ \item{"kv"} {Work done on
   spots (Lanaus)} \item{"hs"} {Planing (höyläys)} \item{"pe"} {Street washing
   (kadunpesu)} \item{"ps"} {Dust binding (Pölynsidonta)} \item{"hn"} {Sand
   removal (hiekannosto)} \item{"hj"} {Brushing (harjaus)} \item{"pn"}
-  {Coating (pinnoitus, liittyy kesähoitoreitteihin} }
+  {Coating (pinnoitus, liittyy kesähoitoreitteihin)} }
 }
 \examples{
 ## vehicle 8, 10 last instances
