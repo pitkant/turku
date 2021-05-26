@@ -17,7 +17,7 @@ get_bicycle_routes(dataset = NULL, ...)
 \item{choice}{Input "paa", "lahi" or NULL (default)}
 }
 \value{
-data.frame
+spatial object
 }
 \description{
 Download and visualize bicycle routes in Turku

@@ -309,7 +309,7 @@ get_linkedevents <- function(query, ...) {
 #'   \href{https://github.com/City-of-Helsinki/aura/wiki/API}{City of Helsinki documentation}
 #'   for more information on the API.
 #' @param choice Input "paa", "lahi" or NULL (default)
-#' @return data.frame
+#' @return spatial object
 #' @author Pyry Kantanen
 #' @examples
 #' bicycle <- get_bicycle_routes(dataset = "paa")
@@ -332,19 +332,41 @@ get_bicycle_routes <- function(dataset = NULL, ...) {
     final_choice <- tab_files[choice_index]
   }
 
-  bike_data <- data.frame()
-  bike_data <- rgdal::readOGR(dsn = paste(tempdir(), final_choice, sep = "/"))
-  bike_data
+  bicycle_routes <- data.frame()
+  bicycle_routes <- rgdal::readOGR(dsn = paste(tempdir(), final_choice, sep = "/"))
+  bicycle_routes
+}
 
+#' @title Turku city bike data
+#' @description Download city bike data in Turku
+#' @source
+#' Source: Turku region public transport's transit and timetable data.
+#' The administrator of data is Turku region public transport.
+#' Dataset is downloaded from http://data.foli.fi/ using the license
+#' Creative Commons Attribution 4.0 International (CC BY 4.0).
+#'
+#' See \href{http://data.foli.fi/doc/index-en}{TSJL - transit API}
+#' and \href{http://data.foli.fi/doc/citybike/v0/index}{FÖLLÄRI - Kaupunkipyörät}
+#' for additional information.
+#' @param format Input NULL (default), "json" or "geojson".
+#' @return data.table or sf object
+#' @author Pyry Kantanen
+#' @examples
+#' follari_stations <- get_bicycle_stats(format = "geojson")
+#' @importFrom jsonlite fromJSON
+#' @importFrom geojsonsf geojson_sf
+#' @export
+get_citybike_stats <- function(format = NULL) {
 
-  # if (!is.null(id)) {
-  #   paste(api_url, id, sep = "/")
-  # }
-  #
-  # url <- parse_url(api_url)
-  # url$query <- list(...)
-  # url <- build_url(url)
-  #
-  # object <- jsonlite::fromJSON(txt = api_url, simplifyVector = TRUE)
-  # object
+  if (is.null(format) == TRUE || tolower(format) == "json") {
+    api_url <- "http://data.foli.fi/citybike"
+    object <- jsonlite::fromJSON(api_url)
+    object <- as.data.frame(object)
+  } else if (tolower(format) == "geojson") {
+    api_url <- "http://data.foli.fi/citybike/geojson"
+    object <- geojsonsf::geojson_sf(api_url)
+  } else {
+    stop("Input valid format or use NULL")
+  }
+  object
 }
