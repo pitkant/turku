@@ -50,13 +50,7 @@ get_airmonitoring <- function(station.id = NULL, to.sf = FALSE, timeseries = FAL
   url <- build_url(url)
 
   # Check whether API url available
-  conn<-url(api_url)
-  doesnotexist<-inherits(try(suppressWarnings(readLines(conn)),silent=TRUE),"try-error")
-  close(conn)
-  if (doesnotexist) {
-    warning(paste("Sorry! API", api_url, "not available! Returning NULL"))
-    return(NULL)
-  }
+  stopifnot(check_connection(api_url))
 
   message(
     "All content is available under CC BY 4.0, except where otherwise stated.
@@ -115,13 +109,7 @@ get_turku_energia_art <- function(data.url = "https://dev.turku.fi/datasets/turk
   # WGS84 "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 
   # Check whether API url available
-  conn<-url(data_url)
-  doesnotexist<-inherits(try(suppressWarnings(readLines(conn)),silent=TRUE),"try-error")
-  close(conn)
-  if (doesnotexist) {
-    warning(paste("Sorry! API", data_url, "not available! Returning NULL"))
-    return(NULL)
-  }
+  stopifnot(check_connection(api_url))
 
   data <- read.csv2(data_url, header = TRUE, dec = ".", fileEncoding = "latin1")
   if (to.sf == TRUE) {
@@ -278,13 +266,7 @@ get_linkedevents <- function(query, ...) {
   url <- httr::build_url(url)
 
   # Check whether API url available
-  conn<-url(api_url)
-  doesnotexist<-inherits(try(suppressWarnings(readLines(conn)),silent=TRUE),"try-error")
-  close(conn)
-  if (doesnotexist) {
-    warning(paste("Sorry! API", api_url, "not available! Returning NULL"))
-    return(NULL)
-  }
+  stopifnot(check_connection(api_url))
 
   res_list <- jsonlite::fromJSON(url)
   # res_list <- res_list$data
@@ -349,7 +331,7 @@ get_bicycle_routes <- function(dataset = NULL, ...) {
 #' and \href{http://data.foli.fi/doc/citybike/v0/index}{FÖLLÄRI - Kaupunkipyörät}
 #' for additional information.
 #' @param format Input NULL (default), "json" or "geojson".
-#' @return data.table or sf object
+#' @return data.frame or sf object
 #' @author Pyry Kantanen
 #' @examples
 #' follari_stations <- get_bicycle_stats(format = "geojson")
@@ -369,4 +351,72 @@ get_citybike_stats <- function(format = NULL) {
     stop("Input valid format or use NULL")
   }
   object
+}
+
+#' @title Turku traffic counter data
+#' @description Download data from traffic data counters
+#' @source
+#' Source: Turku region public transport's transit and timetable data.
+#' The administrator of data is Turku region public transport.
+#' Dataset is downloaded from http://data.foli.fi/ using the license
+#' Creative Commons Attribution 4.0 International (CC BY 4.0).
+#'
+#' See \href{http://data.foli.fi/doc/index-en}{TSJL - transit API}
+#' and \href{http://data.foli.fi/doc/citybike/v0/index}{FÖLLÄRI - Kaupunkipyörät}
+#' for additional information.
+#' @param data.url Option to input own url
+#' @param use.sf Return an sf object. Default is FALSE
+#' @param vehicle.type Select data from certain traffic sensors: "A" (cars),
+#' "J" (pedestrians) or "P" (bicycles)
+#' @param direction Traffic to ("K") or from ("P") city centre
+#' @return data.frame or sf object
+#' @author Pyry Kantanen
+#' @examples
+#' follari_stations <- get_traffic_count(vehicle.type = "A", direction = "K")
+#' @importFrom utils read.csv
+#' @importFrom geojsonsf geojson_sf
+#' @export
+get_traffic_count <- function(data.url = NULL,
+                              use.sf = FALSE,
+                              vehicle.type = "J",
+                              direction = "K") {
+
+  direction <- toupper(direction)
+  vehicle.type <- toupper(vehicle.type)
+
+  if (!(direction %in% c("K", "P"))) {
+    stop("Input valid traffic direction: Use either 'K' (to centre) or
+         'P' (away from city centre)")
+  }
+  if (!(vehicle.type %in% c("A", "J", "P"))) {
+    stop("Input valid traffic type: Use either 'A' (cars), 'J' (pedestrians)
+         or 'P' (bicycles)")
+  }
+
+  subset <- paste0(vehicle.type, direction)
+
+  if (is.null(data.url)) {
+    api_url <- "https://dev.turku.fi/datasets/ecocounter/2020/counters-15min.csv"
+  } else {
+    api_url <- data.url
+  }
+
+  # Check whether API url available
+  stopifnot(check_connection(api_url))
+
+  object_csv <- read.csv(api_url)
+  # Saving time column to own object, to be combined back later
+  object_time <- object_csv[,"aika"]
+  object_subset <- object_csv[,which(grepl(pattern = subset, names(object_csv)))]
+  object <- cbind(object_time, object_subset)
+  object
+
+  # } else if (tolower(format) == "sf") {
+  #   geojson_url <- "https://dev.turku.fi/datasets/ecocounter/liikennelaskimet.geojson"
+  #   geojson_object <- geojsonsf::geojson_sf(geojson_url)
+  #   return(geojson_object)
+  # } else {
+  #   stop("Input valid format or use NULL")
+  # }
+  # object
 }
