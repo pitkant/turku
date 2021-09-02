@@ -11,8 +11,7 @@
 #' .simpleCap("kAaRiNa")
 #'
 #' @noRd
-#' @keywords internal
-#' @export
+#' @keywords Internal
 .simpleCap <- function(x) {
   s <- strsplit(x, " ")[[1]]
   paste(toupper(substring(s, 1, 1)), tolower(substring(s, 2)),
@@ -27,10 +26,11 @@
 #'
 #' @return TRUE or FALSE
 #'
+#' @example
+#' check_connection("https://httpstat.us/200")
 #'
 #' @noRd
-#' @keywords internal
-#' @export
+#' @keywords Internal
 check_connection <- function(api_url) {
   conn<-url(api_url)
   doesnotexist<-inherits(try(suppressWarnings(readLines(conn)),silent=TRUE),"try-error")

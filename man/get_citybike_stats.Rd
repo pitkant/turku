@@ -26,7 +26,7 @@ data.frame or sf object
 Download city bike data in Turku
 }
 \examples{
-follari_stations <- get_bicycle_stats(format = "geojson")
+follari_stations <- get_citybike_stats(format = "geojson")
 }
 \author{
 Pyry Kantanen

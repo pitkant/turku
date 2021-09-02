@@ -109,7 +109,7 @@ get_turku_energia_art <- function(data.url = "https://dev.turku.fi/datasets/turk
   # WGS84 "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 
   # Check whether API url available
-  stopifnot(check_connection(api_url))
+  stopifnot(check_connection(data_url))
 
   data <- read.csv2(data_url, header = TRUE, dec = ".", fileEncoding = "latin1")
   if (to.sf == TRUE) {
@@ -290,7 +290,7 @@ get_linkedevents <- function(query, ...) {
 #'    for additional information. See
 #'   \href{https://github.com/City-of-Helsinki/aura/wiki/API}{City of Helsinki documentation}
 #'   for more information on the API.
-#' @param choice Input "paa", "lahi" or NULL (default)
+#' @param dataset Input "paa", "lahi" or NULL (default)
 #' @return spatial object
 #' @author Pyry Kantanen
 #' @examples
@@ -298,7 +298,7 @@ get_linkedevents <- function(query, ...) {
 #' @importFrom rgdal readOGR
 #' @importFrom utils download.file unzip menu
 #' @export
-get_bicycle_routes <- function(dataset = NULL, ...) {
+get_bicycle_routes <- function(dataset = NULL) {
   url <- "https://dev.turku.fi/datasets/turun-kaupungin-pyorailyverkosto.zip"
 
   temp <- tempfile(fileext = ".zip")
@@ -334,7 +334,7 @@ get_bicycle_routes <- function(dataset = NULL, ...) {
 #' @return data.frame or sf object
 #' @author Pyry Kantanen
 #' @examples
-#' follari_stations <- get_bicycle_stats(format = "geojson")
+#' follari_stations <- get_citybike_stats(format = "geojson")
 #' @importFrom jsonlite fromJSON
 #' @importFrom geojsonsf geojson_sf
 #' @export

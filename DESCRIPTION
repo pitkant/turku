@@ -24,7 +24,8 @@ Imports:
     purrr,
     geojsonsf,
     httr,
-    jsonlite
+    jsonlite,
+    rgdal
 Suggests: 
     rmarkdown,
     knitr,

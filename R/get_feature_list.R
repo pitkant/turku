@@ -33,13 +33,13 @@ get_feature_list <- function(base.url = NULL) {
   resp <- wfs_api(base.url = base.url, queries = "request=GetCapabilities")
   content <- resp$content
 
-  # For some reason this seems to be a necessary step
-  # for xml_find_all to function
+  # For some reason this seems to be a necessary step for xml_find_all to work
   content_ns_strip <- xml_ns_strip(content)
 
-  # All "<FeatureType>" nodes
+  # Find all "<FeatureType>" nodes
   all_features <- xml_find_all(x = content_ns_strip, xpath = "//FeatureType ")
 
+  # Initialize an empty data.frame
   df <- data.frame(matrix(NA, nrow = length(all_features), ncol = 2))
   names(df) <- c("Name", "Title")
 

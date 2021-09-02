@@ -11,10 +11,10 @@ See
   for more information on the API.
 }
 \usage{
-get_bicycle_routes(dataset = NULL, ...)
+get_bicycle_routes(dataset = NULL)
 }
 \arguments{
-\item{choice}{Input "paa", "lahi" or NULL (default)}
+\item{dataset}{Input "paa", "lahi" or NULL (default)}
 }
 \value{
 spatial object
